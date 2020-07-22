@@ -3,11 +3,12 @@
 # We want a simple infinite allele Wright-Fisher-style model with different modes of transmission
 
 N = 1000          # Census popupation size
-tmax = 1000       # Number of timesteps / generations
+tmax = 500       # Number of timesteps / generations
 mu = 1e-3        # Innovation rate
 k = 1          # Strength of one-to-many transmission, number of cultural models
-f = 1.005         # Conformity exponent
-
+f = 1          # Conformity exponent
+Mode = "Conformity"
+l = N
 
 # Initialize population with cultural traits
 Pop <- sample(1:N)
@@ -24,47 +25,55 @@ for (t in 1: tmax){
   
   #Cultural Transmission
   
+  if (Mode == "OtM"){
+  # One - to - many
   # First sample set of potential models (fraction k of N) from the population
   Models <- sample(1:N, size = k*N, replace = FALSE)
-  
-  #Vector with unique variants
-  Variants <- unique(Pop[Models])
-  
-  #Frequency of each variant
-  Freq_Variants <- c()
-  for (x in Variants) {
-    Freq_Variants[which(Variants == x)] <- length(which(Pop[Models] == x))
+  Copied <- sample(Models, N, replace = TRUE)
+  Pop <- Pop[Copied]
   }
   
-  #Probability individuals choose each variant
-  P <- Freq_Variants^f / sum(Freq_Variants^f)
   
-  # 2 ways to do conformity
+  if (Mode == "Conformity"){
+    
+    Copied <- c()
+    
+  for (i in 1:N) {
+    
+    m <- sample(1:N, l)
+    
+    #Vector with unique variants
+    Variants <- unique(Pop[m])
+    
+    #Frequency of each variant
+    Freq_Variants <- c()
+    for (x in Variants) {
+      Freq_Variants[which(Variants == x)] <- length(which(Pop == x))
+    }
+    
+    #Probability individuals choose each variant
+    P <- Freq_Variants^f / sum(Freq_Variants^f)
+    P <- P/sum(P)
+    
+    
+      if ( length(Variants) == 1) {
+        Copied[i] <- Variants
+      } else {
+        v <- sample(Variants, size = 1, replace = FALSE, P)
+        Copied[i] <- sample(m[which(Pop[m] == v)], 1)
+      }
+   
+  }
+    
+    Pop <- Pop[Copied]
+    
   
-  # 1. Sample from variants, then randomly choOse one carrier
+  }
   
-  #Copied <- c()
-  #for (i in 1:N) {
-    #if ( length(Variants) == 1) {
-   #   Copied[i] <- sample(Models, 1)
-  # } else {
-     # v <- sample(Variants, size = 1, replace = FALSE, P)
-    #  Copied[i] <- sample(Models[which(Pop[Models] == v)], 1)
-   # }
-  #}
-
-  
-  #2. Divide probabilities by frequency and sample from individuals (faster)
-   P_Ind <- P/Freq_Variants
-   Copied <- sample(Models, N, replace = TRUE, sapply(Models, function (x) P_Ind[which(Variants == Pop[x])]))
-  
-  Pop <- Pop[Copied]
-  
-
   #Record mean and variance of cultural offspring for everyone in the parental generation
   Offspring_Record <-c()
   for (x in 1:N) {
-   Offspring_Record[x] <- length(which(Copied == x))
+    Offspring_Record[x] <- length(which(Copied == x))
   }
   
   k_bar[t] <- mean(Offspring_Record)
@@ -77,9 +86,8 @@ for (t in 1: tmax){
   
   #Record current traits
   Trait_Record[t,] <- Pop
-
+  
 }#t
-
 
 
 
@@ -122,6 +130,6 @@ a <- Trajectories[ ,apply(Trajectories, 2, function(x) max(x) > 0.1)]
 
 plot(a[,1], type = "n", ylim = c(0,1))
 for (j in 1:ncol(a)) {
-lines(a[,j])
+  lines(a[,j])
 }
 

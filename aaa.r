@@ -2,15 +2,14 @@
 # Cultural effective population size model
 # We want a simple infinite allele Wright-Fisher-style model with different modes of transmission
 
-N = 1000          # Census popupation size
-tmax = 1000       # Number of timesteps / generations
-mu = 1e-3        # Innovation rate
+N = 100          # Census popupation size
+tmax = 10       # Number of timesteps / generations
+mu = 10e-4        # Innovation rate
 k = 1          # Strength of one-to-many transmission, number of cultural models
-f = 1.005         # Conformity exponent
-
+f = 2          # Conformity exponent
 
 # Initialize population with cultural traits
-Pop <- sample(1:N)
+Pop <- 1:N
 
 # Create numerator for cultural variants
 Counter <- max(N)
@@ -23,48 +22,42 @@ for (t in 1: tmax){
   print(t)
   
   #Cultural Transmission
-  
-  # First sample set of potential models (fraction k of N) from the population
   Models <- sample(1:N, size = k*N, replace = FALSE)
-  
-  #Vector with unique variants
   Variants <- unique(Pop[Models])
   
-  #Frequency of each variant
   Freq_Variants <- c()
   for (x in Variants) {
     Freq_Variants[which(Variants == x)] <- length(which(Pop[Models] == x))
   }
   
-  #Probability individuals choose each variant
   P <- Freq_Variants^f / sum(Freq_Variants^f)
   
-  # 2 ways to do conformity
+  P_Models <- c()
   
-  # 1. Sample from variants, then randomly choOse one carrier
-  
-  #Copied <- c()
-  #for (i in 1:N) {
-    #if ( length(Variants) == 1) {
-   #   Copied[i] <- sample(Models, 1)
-  # } else {
-     # v <- sample(Variants, size = 1, replace = FALSE, P)
-    #  Copied[i] <- sample(Models[which(Pop[Models] == v)], 1)
-   # }
-  #}
+  for (x in Models) {
+    P_Models[which(Models == x)] <- P[which(Variants == Pop[x])]
+  }
 
+  # Copied <- sample(Models, N, TRUE)
   
-  #2. Divide probabilities by frequency and sample from individuals (faster)
-   P_Ind <- P/Freq_Variants
-   Copied <- sample(Models, N, replace = TRUE, sapply(Models, function (x) P_Ind[which(Variants == Pop[x])]))
+  New <- c()
+  for (id in 1:N) {
+    New[id] <- sample(Variants, 1, prob =  P)
+  } 
   
-  Pop <- Pop[Copied]
+  #Copied <- sample(Variants, N, TRUE, P)
   
-
+  Pop <- New
+  
+  
+  
+  
+  
+  
   #Record mean and variance of cultural offspring for everyone in the parental generation
   Offspring_Record <-c()
   for (x in 1:N) {
-   Offspring_Record[x] <- length(which(Copied == x))
+    Offspring_Record[x] <- length(which(Copied == x))
   }
   
   k_bar[t] <- mean(Offspring_Record)
@@ -77,14 +70,8 @@ for (t in 1: tmax){
   
   #Record current traits
   Trait_Record[t,] <- Pop
-
+  
 }#t
-
-
-
-
-par(mfrow = c(2,2))
-
 
 
 
@@ -101,14 +88,13 @@ N_eff <- c()
 for (x in 1:length(k_bar)) {
   N_eff[x] <- N_e(k_bar[x], V_k[x])
 }
-plot(N_eff, type = "l") #, ylim = c(0,(N+0.5*N)))
+plot(N_eff, type = "l")
 abline(h=mean(N_eff))
-abline(h=mean(N), lty=2)
 
 
-plot(V_k, type="l")
-plot(V_k, N_eff)
-abline(lm(N_eff~V_k))
+
+
+
 
 
 Trajectories <- matrix(NA, nrow = tmax, ncol = length(unique(c(Trait_Record))))
@@ -122,6 +108,6 @@ a <- Trajectories[ ,apply(Trajectories, 2, function(x) max(x) > 0.1)]
 
 plot(a[,1], type = "n", ylim = c(0,1))
 for (j in 1:ncol(a)) {
-lines(a[,j])
+  lines(a[,j])
 }
 
