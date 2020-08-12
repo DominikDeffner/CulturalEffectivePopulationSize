@@ -2,11 +2,11 @@
 # Cultural effective population size model
 # We want a simple infinite allele Wright-Fisher-style model with different modes of transmission
 
-N = 1000          # Census popupation size
-tmax = 1000       # Number of timesteps / generations
-mu = 1e-3        # Innovation rate
+N = 10000          # Census popupation size
+tmax = 200       # Number of timesteps / generations
+mu = 1e-1        # Innovation rate
 k = 1          # Strength of one-to-many transmission, number of cultural models
-f = 1.005         # Conformity exponent
+theta = 1.1         # Conformity exponent
 
 
 # Initialize population with cultural traits
@@ -15,7 +15,9 @@ Pop <- sample(1:N)
 # Create numerator for cultural variants
 Counter <- max(N)
 
-Trait_Record     <- matrix(NA, nrow = tmax, ncol = N)
+#Trait_Record     <- matrix(NA, nrow = tmax, ncol = N)
+Frequency_spectra <- matrix(NA, nrow = tmax, ncol = N)
+
 k_bar <- c()
 V_k <- c()
 
@@ -37,7 +39,7 @@ for (t in 1: tmax){
   }
   
   #Probability individuals choose each variant
-  P <- Freq_Variants^f / sum(Freq_Variants^f)
+  P <- Freq_Variants^theta / sum(Freq_Variants^theta)
   
   # 2 ways to do conformity
   
@@ -76,8 +78,22 @@ for (t in 1: tmax){
   Counter <- max(Pop)
   
   #Record current traits
-  Trait_Record[t,] <- Pop
-
+  #Trait_Record[t,] <- Pop
+  
+  # Frequency spectrum of traits
+  
+  # Unique Traits
+   u <- unique(Pop)
+   
+   # Frequency of traits
+   f <- sapply(u, function(x) length(which(Pop == x)))
+   g <- unique(f)
+   z <- sapply(g, function(x) length(which(f == x)))
+   
+   for (i in 1:N) {
+     Frequency_spectra[t,i] <- length(which(f == i))
+   }
+  
 }#t
 
 
@@ -110,7 +126,7 @@ plot(V_k, type="l")
 plot(V_k, N_eff)
 abline(lm(N_eff~V_k))
 
-
+# Trajectories of single traits
 Trajectories <- matrix(NA, nrow = tmax, ncol = length(unique(c(Trait_Record))))
 for( i in unique(c(Trait_Record))){
   Trajectories[, which(unique(c(Trait_Record))==i)] <- apply(Trait_Record, 1, function(x) length(which(x == i)))
@@ -124,4 +140,10 @@ plot(a[,1], type = "n", ylim = c(0,1))
 for (j in 1:ncol(a)) {
 lines(a[,j])
 }
+
+# Frequency spectra
+
+plot(g[order(g)], z[order(g)], type = "l", xlim = c(1,N), log = "xy", ylim = c(1,N))
+
+
 
