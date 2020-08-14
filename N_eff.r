@@ -2,12 +2,11 @@
 # Cultural effective population size model
 # We want a simple infinite allele Wright-Fisher-style model with different modes of transmission
 
-N = 10000          # Census popupation size
-tmax = 200       # Number of timesteps / generations
-mu = 1e-1        # Innovation rate
+N = 100          # Census popupation size
+tmax = 10       # Number of timesteps / generations
+mu = 1e-4        # Innovation rate
 k = 1          # Strength of one-to-many transmission, number of cultural models
-theta = 1.1         # Conformity exponent
-
+theta = 0.1         # Conformity exponent
 
 # Initialize population with cultural traits
 Pop <- sample(1:N)
@@ -15,7 +14,7 @@ Pop <- sample(1:N)
 # Create numerator for cultural variants
 Counter <- max(N)
 
-#Trait_Record     <- matrix(NA, nrow = tmax, ncol = N)
+Trait_Record     <- matrix(NA, nrow = tmax, ncol = N)
 Frequency_spectra <- matrix(NA, nrow = tmax, ncol = N)
 
 k_bar <- c()
@@ -78,7 +77,7 @@ for (t in 1: tmax){
   Counter <- max(Pop)
   
   #Record current traits
-  #Trait_Record[t,] <- Pop
+  Trait_Record[t,] <- Pop
   
   # Frequency spectrum of traits
   
@@ -106,9 +105,6 @@ par(mfrow = c(2,2))
 
 # Calculate effective population sizes
 
-k_bar <- k_bar[-(1:(tmax/5))]
-V_k   <- V_k[-(1:(tmax/5))]
-
 N_e <- function(k_bar,V_k){
   (N * k_bar - 1 ) / ( (V_k / k_bar) + k_bar  -1 )
 }
@@ -134,16 +130,11 @@ for( i in unique(c(Trait_Record))){
 
 Trajectories <- Trajectories / N
 
-a <- Trajectories[ ,apply(Trajectories, 2, function(x) max(x) > 0.1)]
+a <- Trajectories#[ ,apply(Trajectories, 2, function(x) max(x) > 0.01)]
 
-plot(a[,1], type = "n", ylim = c(0,1))
+plot(a[,1], type = "n", ylim = c(0,0.1))
 for (j in 1:ncol(a)) {
 lines(a[,j])
 }
-
-# Frequency spectra
-
-plot(g[order(g)], z[order(g)], type = "l", xlim = c(1,N), log = "xy", ylim = c(1,N))
-
 
 
