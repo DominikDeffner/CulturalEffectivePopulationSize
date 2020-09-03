@@ -14,10 +14,10 @@ N_e <- function(k_bar,V_k){
 
 N = 10000          # Census population size
 tmax = 300       # Number of timesteps / generations
-mu = 1e-4        # Innovation rate
-k = 0.5          # Strength of one-to-many transmission, number of cultural models
+mu = 1e-2       # Innovation rate
+k = 1          # Strength of one-to-many transmission, number of cultural models
 theta = 1         # Conformity exponent
-m = 0.1         #Migration rate between 2 populations
+m = 1         #Migration rate between 2 populations
 
 # Initialize population with cultural traits
 
@@ -38,8 +38,8 @@ for (pop_id in 1:2) {
   Div[pop_id] <- diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson")
 }
 
-
-
+d1 <- Div[1]
+d2 <- Div[2]
 # Burn-in to reach equilibrium
 while(Div[1] > Div[2]){
   Copied <- matrix(NA, 2, N)
@@ -62,8 +62,15 @@ while(Div[1] > Div[2]){
     Div[pop_id] <- diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson")
   }
   
+d1 <- c(d1, Div[1])
+d2 <- c(d2, Div[2])
 
 }#while
+
+plot(d1, type = "l", ylim = c(0,1))
+lines(d2)
+
+
 
 # Create output objects
 N_e <- function(k_bar,V_k){
