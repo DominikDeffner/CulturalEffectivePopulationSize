@@ -5,19 +5,23 @@
 # We simulate 2 different populations, one starting with all the same variants, one with all unique variants.
 # We measure diversity and run simulations until diversities cross indicating they've reached equilibrium, then switch transmission mode
 
+
+# Evolution on different graphs
+
 # Function to calculate effective population sizes
 library(vegan)
+library(igraph)
+library(ggnetwork)
 
 N_e <- function(k_bar,V_k){
   (N * k_bar - 1 ) / ( (V_k / k_bar) + k_bar  -1 )
 }
 
-N = 10000          # Census population size
+N = 1000          # Census population size
 tmax = 300       # Number of timesteps / generations
-mu = 1e-2       # Innovation rate
-k = 1          # Strength of one-to-many transmission, number of cultural models
-theta = 1         # Conformity exponent
-m = 1         #Migration rate between 2 populations
+mu = 1e-3       # Innovation rate
+type = "random" # Network type: "random", "scalefree" or "smallworld"
+p = 0.4
 
 # Initialize population with cultural traits
 
@@ -35,7 +39,7 @@ Counter <- c(max(Pop[1,]), max(Pop[2,]))
 # Calculate Simpson diversity in both populations
 Div <- c()
 for (pop_id in 1:2) {
-  Div[pop_id] <- diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson")
+  Div[pop_id] <- vegan::diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson")
 }
 
 d1 <- Div[1]
@@ -59,17 +63,13 @@ while(Div[1] > Div[2]){
   # Calculate Simpson diversity in both populations
   Div <- c()
   for (pop_id in 1:2) {
-    Div[pop_id] <- diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson")
+    Div[pop_id] <- vegan::diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson")
   }
   
 d1 <- c(d1, Div[1])
 d2 <- c(d2, Div[2])
 
 }#while
-
-plot(d1, type = "l", ylim = c(0,1))
-lines(d2)
-
 
 
 # Create output objects
@@ -86,40 +86,43 @@ N_effective[[1]] <- N_e(mean(Offspring_Record1), var(Offspring_Record1))
 N_effective[[2]] <- N_e(mean(Offspring_Record2), var(Offspring_Record2))
 
 
-for (t in 1:tmax) {
-  
-   # Migration
-  Migrants1 <- rbinom(N,1,m)
-  Migrant_Variants <- Pop[1, which(Migrants1 == 1)]
-  
-  Migrants2 <- sample(1:N, size = length(which(Migrants1==1)), replace = FALSE)
+# Simulate random notwork
+#g <- erdos.renyi.game(N, p, type = "gnp")
 
-  Pop[1, which(Migrants1 == 1)] <- Pop[2, Migrants2]
-  Pop[2, Migrants2] <- Migrant_Variants
+# Scale free network
+#g <- sample_pa(N, power = 1, m = 1, out.dist = NULL, out.seq = NULL, out.pref = FALSE, zero.appeal = 1, directed = FALSE, algorithm ="psumtree", start.graph = NULL)
+
+# Small world
+g <- watts.strogatz.game(1, N, 2, p = 0, loops = FALSE, multiple = FALSE)
+
+A <- as.matrix(get.adjacency(g, type = "both"))
+
+
+for (t in 1:tmax) {
   
   for (pop_id in 1:2) {
     
-    #Cultural Transmission
-    # First sample set of potential models (fraction k of N) from the population
-    Models <- sample(1:N, size = k*N, replace = FALSE)
     
-    #Vector with unique variants
-    Variants <- unique(Pop[pop_id,Models])
+     
+    Pop_new <- c()
+    Copied <- c()
     
-    #Frequency of each variant
-    Freq_Variants <- c()
-    for (x in Variants) {
-      Freq_Variants[which(Variants == x)] <- length(which(Pop[pop_id,Models] == x))
+    #Cultural Transmission in network
+    for (i in 1:N) {
+     # if ( length(which(A[i,] == 1)) >  1 ){
+        Chosen <- sample(which(A[i,] == 1), 1 )
+     # } else if (length(which(A[i,] == 1)) == 1){
+     #   Chosen <- which(A[i,] == 1)
+    #  } else {
+    #    Chosen <- i
+    #  }
+      Copied <- c(Copied, Chosen)
+      Pop_new[i] <- Pop[pop_id, Chosen]  
     }
     
-    #Probability individuals choose each variant
-    P <- Freq_Variants^theta / sum(Freq_Variants^theta)
-    P_Ind <- P/Freq_Variants
-    Copied <- sample(Models, N, replace = TRUE, sapply(Models, function (x) P_Ind[which(Variants == Pop[pop_id,x])]))
-    
-    Pop[pop_id,] <- Pop[pop_id,Copied]
-    
-    
+    # Replace population with juveniles
+    Pop[pop_id , ] <- Pop_new
+
     # Compute effective population size
     Offspring_Record <-  sapply(1:N, function(x) length(which(Copied == x)))
     N_effective[[pop_id]] <-  c(N_effective[[pop_id]], N_e(mean(Offspring_Record), var(Offspring_Record)))
@@ -129,22 +132,6 @@ for (t in 1:tmax) {
     Innovators <- rbinom(N,1,mu)
     Pop[pop_id, Innovators == 1] <- (Counter[pop_id] + 1) : (Counter[pop_id] + length(which(Innovators==1)))
     Counter[pop_id] <- max(Pop[pop_id,])
-    
-    
-    
-    # Frequency spectrum of traits
-    
-    # Unique Traits
-    #u <- unique(Pop)
-    
-    # Frequency of traits
-    #f <- sapply(u, function(x) length(which(Pop == x)))
-    #g <- unique(f)
-    #z <- sapply(g, function(x) length(which(f == x)))
-    
-    #for (i in 1:N) {
-    #  Frequency_spectra[t,i] <- length(which(f == i))
-    #}
     
 
   }#pop_id
@@ -173,42 +160,5 @@ plot(N_effective[[1]], type = "b")
 
 
 
-
-
-
-
-par(mfrow = c(2,2))
-
-
-
-
-
-N_eff <- c()
-for (x in 1:length(k_bar)) {
-  N_eff[x] <- N_e(k_bar[x], V_k[x])
-}
-plot(N_eff, type = "l") #, ylim = c(0,(N+0.5*N)))
-abline(h=mean(N_eff))
-abline(h=mean(N), lty=2)
-
-
-plot(V_k, type="l")
-plot(V_k, N_eff)
-abline(lm(N_eff~V_k))
-
-# Trajectories of single traits
-Trajectories <- matrix(NA, nrow = tmax, ncol = length(unique(c(Trait_Record))))
-for( i in unique(c(Trait_Record))){
-  Trajectories[, which(unique(c(Trait_Record))==i)] <- apply(Trait_Record, 1, function(x) length(which(x == i)))
-}
-
-Trajectories <- Trajectories / N
-
-a <- Trajectories#[ ,apply(Trajectories, 2, function(x) max(x) > 0.01)]
-
-plot(a[,1], type = "n", ylim = c(0,0.1))
-for (j in 1:ncol(a)) {
-  lines(a[,j])
-}
 
 

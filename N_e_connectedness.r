@@ -5,6 +5,9 @@
 # We simulate 2 different populations, one starting with all the same variants, one with all unique variants.
 # We measure diversity and run simulations until diversities cross indicating they've reached equilibrium, then switch transmission mode
 
+
+#Connectedness
+
 # Function to calculate effective population sizes
 library(vegan)
 
@@ -12,13 +15,11 @@ N_e <- function(k_bar,V_k){
   (N * k_bar - 1 ) / ( (V_k / k_bar) + k_bar  -1 )
 }
 
-N = 10000          # Census population size
+N = 1000          # Census population size
 tmax = 300       # Number of timesteps / generations
-mu = 1e-2       # Innovation rate
-k = 1          # Strength of one-to-many transmission, number of cultural models
-theta = 1         # Conformity exponent
-m = 1         #Migration rate between 2 populations
-
+mu = 1e-3       # Innovation rate
+m = 0         #Migration rate between 2 populations
+e = 0.3
 # Initialize population with cultural traits
 
 Pop <- matrix(NA, 2, N)
@@ -67,16 +68,7 @@ d2 <- c(d2, Div[2])
 
 }#while
 
-plot(d1, type = "l", ylim = c(0,1))
-lines(d2)
-
-
-
 # Create output objects
-N_e <- function(k_bar,V_k){
-  (N * k_bar - 1 ) / ( (V_k / k_bar) + k_bar  -1 )
-}
-#Frequency_spectra <- array(NA,  dim = c(2, tmax, N))
 N_effective <- list()
 
 Offspring_Record1 <-  sapply(1:N, function(x) length(which(Copied[1,] == x)))
@@ -88,40 +80,30 @@ N_effective[[2]] <- N_e(mean(Offspring_Record2), var(Offspring_Record2))
 
 for (t in 1:tmax) {
   
-   # Migration
-  Migrants1 <- rbinom(N,1,m)
-  Migrant_Variants <- Pop[1, which(Migrants1 == 1)]
+  # Migration
+  Migrants1 <- which(rbinom(N,1,m) == 1)
+  Migrants2 <- sample(1:N, size = length(Migrants1), replace = FALSE)
+  Pop[1, Migrants1] <- Pop[2, Migrants2]
+  Pop[2, Migrants2] <- Pop[1, Migrants1]
   
-  Migrants2 <- sample(1:N, size = length(which(Migrants1==1)), replace = FALSE)
-
-  Pop[1, which(Migrants1 == 1)] <- Pop[2, Migrants2]
-  Pop[2, Migrants2] <- Migrant_Variants
   
   for (pop_id in 1:2) {
     
     #Cultural Transmission
-    # First sample set of potential models (fraction k of N) from the population
-    Models <- sample(1:N, size = k*N, replace = FALSE)
-    
-    #Vector with unique variants
-    Variants <- unique(Pop[pop_id,Models])
-    
-    #Frequency of each variant
-    Freq_Variants <- c()
-    for (x in Variants) {
-      Freq_Variants[which(Variants == x)] <- length(which(Pop[pop_id,Models] == x))
-    }
-    
-    #Probability individuals choose each variant
-    P <- Freq_Variants^theta / sum(Freq_Variants^theta)
-    P_Ind <- P/Freq_Variants
-    Copied <- sample(Models, N, replace = TRUE, sapply(Models, function (x) P_Ind[which(Variants == Pop[pop_id,x])]))
-    
-    Pop[pop_id,] <- Pop[pop_id,Copied]
-    
-    
+
+
+      #Cultural Exchange
+      Models_ex <- N + which(rbinom(1:N,1,e) == 1)         #We add N to IDs so we don't confuse them with focal population
+      Copied <- sample(c(1:N, Models_ex), N, replace = TRUE)
+      
+      Copied_pop1 <- Copied[Copied <= N]
+      Copied_pop2 <- Copied[Copied > N] - N
+      
+      Pop[pop_id,] <- c( Pop[pop_id,Copied_pop1], Pop[c(1,2)[-pop_id], Copied_pop2] )
+      
+      Offspring_Record <-  sapply(c(1:N, Models_ex), function(x) length(which(Copied == x)))
+      
     # Compute effective population size
-    Offspring_Record <-  sapply(1:N, function(x) length(which(Copied == x)))
     N_effective[[pop_id]] <-  c(N_effective[[pop_id]], N_e(mean(Offspring_Record), var(Offspring_Record)))
     
     
@@ -130,23 +112,7 @@ for (t in 1:tmax) {
     Pop[pop_id, Innovators == 1] <- (Counter[pop_id] + 1) : (Counter[pop_id] + length(which(Innovators==1)))
     Counter[pop_id] <- max(Pop[pop_id,])
     
-    
-    
-    # Frequency spectrum of traits
-    
-    # Unique Traits
-    #u <- unique(Pop)
-    
-    # Frequency of traits
-    #f <- sapply(u, function(x) length(which(Pop == x)))
-    #g <- unique(f)
-    #z <- sapply(g, function(x) length(which(f == x)))
-    
-    #for (i in 1:N) {
-    #  Frequency_spectra[t,i] <- length(which(f == i))
-    #}
-    
-
+  
   }#pop_id
   
   print(t)
@@ -154,8 +120,12 @@ for (t in 1:tmax) {
 
 
 
-
+par(mfrow=c(1,2))
 plot(N_effective[[1]], type = "b")
+abline(h = mean(N_effective[[1]]))
+
+plot(N_effective[[2]], type = "b")
+abline(h = mean(N_effective[[2]]))
 
 
 
@@ -164,51 +134,5 @@ plot(N_effective[[1]], type = "b")
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-par(mfrow = c(2,2))
-
-
-
-
-
-N_eff <- c()
-for (x in 1:length(k_bar)) {
-  N_eff[x] <- N_e(k_bar[x], V_k[x])
-}
-plot(N_eff, type = "l") #, ylim = c(0,(N+0.5*N)))
-abline(h=mean(N_eff))
-abline(h=mean(N), lty=2)
-
-
-plot(V_k, type="l")
-plot(V_k, N_eff)
-abline(lm(N_eff~V_k))
-
-# Trajectories of single traits
-Trajectories <- matrix(NA, nrow = tmax, ncol = length(unique(c(Trait_Record))))
-for( i in unique(c(Trait_Record))){
-  Trajectories[, which(unique(c(Trait_Record))==i)] <- apply(Trait_Record, 1, function(x) length(which(x == i)))
-}
-
-Trajectories <- Trajectories / N
-
-a <- Trajectories#[ ,apply(Trajectories, 2, function(x) max(x) > 0.01)]
-
-plot(a[,1], type = "n", ylim = c(0,0.1))
-for (j in 1:ncol(a)) {
-  lines(a[,j])
-}
 
 
