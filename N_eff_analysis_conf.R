@@ -8,10 +8,7 @@ seq<-expand.grid(N=10000, tmax=300,Nsim = 100, mu = c(1e-2,1e-3,1e-4), k = c(0.2
 library(scales)
 #color stuff
 require(RColorBrewer)#load package
-
-
-x <- seq(from=0, to=1, by=0.2) # fake data
-col.pal <- brewer.pal(length(x), "Dark2") #create a pallette which you loop over for corresponding values
+col.pal <- brewer.pal(8, "Dark2") #create a pallette which you loop over for corresponding values
 
 
 Mean <- matrix(NA, nrow = nrow(seq), ncol = seq$tmax[1])
@@ -34,7 +31,7 @@ for (i in 1 : nrow(seq)) {
 
 
 graphics.off()
-png("Conf.png", res = 600, height = 16, width = 20, units = "cm")
+png("Conf.png", res = 1200, height = 16, width = 22, units = "cm")
 
 par(mfrow = c(3,3),
     oma=c(2,5.2,2,0),
@@ -45,8 +42,10 @@ for (mu in c(1e-4,1e-3,1e-2)) {
     
     i <- which(seq$k==1 & seq$mu==mu & seq$theta==theta)
     
-    plot(Mean[i,], type = "l", ylim = c(4000, 10500), col="black", lwd=3, xlim = c(1,100), xlab = "", ylab = "")
-    polygon(c(1:300,300:1), c(Upper[i,],rev(Lower[i,])),col=alpha("black",alpha = 0.2), border = NA)
+    plot(Mean[i,], type = "n", ylim = c(4000, 10500), col="black", lwd=3, xlim = c(1,100), xlab = "", ylab = "")
+    polygon(c(1:300,300:1), c(Upper[i,],rev(Lower[i,])),col=alpha(col.pal[1],alpha = 0.5), border = NA)
+    lines(Mean[i,], type = "l", ylim = c(4000, 10500), col="black", lwd=3)
+    
     abline(h = 10000, lty = 2)
     #mtext(seq$mu[i])
     #mtext(seq$theta[i], line = 1.1)
