@@ -20,7 +20,7 @@ N_e <- function(k_bar,V_k){
 N = 1000          # Census population size
 tmax = 300       # Number of timesteps / generations
 mu = 1e-4       # Innovation rate
-type = "random" # Network type: "random", "scalefree" or "smallworld"
+type = "smallworld" # Network type: "random", "scalefree" or "smallworld"
 p = 0.4
 
 # Initialize population with cultural traits
@@ -93,7 +93,7 @@ N_effective[[2]] <- N_e(mean(Offspring_Record2), var(Offspring_Record2))
 #g <- sample_pa(N, power = 1, m = 1, out.dist = NULL, out.seq = NULL, out.pref = FALSE, zero.appeal = 1, directed = FALSE, algorithm ="psumtree", start.graph = NULL)
 
 # Small world
-g <- watts.strogatz.game(1, N, 1, p = 0.05, loops = FALSE, multiple = FALSE)
+g <- watts.strogatz.game(1, N, 1, p = 0.01, loops = FALSE, multiple = FALSE)
 
 A <- as.matrix(get.adjacency(g, type = "both"))
 
@@ -153,11 +153,13 @@ plot(N_effective[[1]], type = "b")
 
 
 
+q <- c()
 
+for (i in 1:1000) {
+  q[i] <- length(which(A[i,] == 1))
+}
 
-
-
-
+table(q)
 
 
 
