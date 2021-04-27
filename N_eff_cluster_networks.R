@@ -6,7 +6,7 @@
 
 library(vegan)
 library(igraph)
-seq<-expand.grid(N=1000, tmax=500,Nsim = 1000, mu = c(1e-1,1e-2,1e-3,1e-4),p = seq(0.1,1,0.1),pi = seq(0,1.5,length.out = 10), K = seq(1,10,1),
+seq<-expand.grid(N=1000, tmax=300,Nsim = 1000, mu = c(1e-1,1e-2,1e-3,1e-4),p = seq(0.1,1,0.1),pi = seq(0,1.5,length.out = 10), K = seq(1,10,1),
                  type = c("random","scalefree","smallworld"))
 
 seq <- seq[c(which(seq$type == "random"     & seq$pi == 0  & seq$K ==1),
@@ -96,7 +96,7 @@ sim.funct <- function(N, tmax, Nsim, mu, p, pi, K, type){
     
     if (type == "scalefree"){
       # Scale free network
-      g <- sample_pa(N, power = pi, m = 1, out.dist = NULL, out.seq = NULL, out.pref = FALSE, zero.appeal = 1, directed = FALSE, algorithm ="psumtree", start.graph = NULL)
+      g <- sample_pa(N, power = pi, m = 2, out.dist = NULL, out.seq = NULL, out.pref = FALSE, zero.appeal = 1, directed = FALSE, algorithm ="psumtree", start.graph = NULL)
     }
     
     if (type == "smallworld"){
@@ -111,7 +111,6 @@ sim.funct <- function(N, tmax, Nsim, mu, p, pi, K, type){
     for (t in 1:tmax) {
       
       for (pop_id in 1:2) {
-        
         
         Pop_new <- c()
         Copied <- c()
@@ -176,4 +175,4 @@ result <- mclapply(
   function(i) sim.funct(seq$N[i], seq$tmax[i], seq$Nsim[i], seq$mu[i], seq$p[i], seq$pi[i],seq$K[i],seq$type[i]),
   mc.cores=60)
 
-save(result, file = "Neff_networks2004")
+save(result, file = "Neff_networks2704newscale")

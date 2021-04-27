@@ -4,7 +4,7 @@
 
 library(igraph)
 
-seq<-expand.grid(N=1000, tmax=300,Nsim = 1000, mu = c(1e-1,1e-2,1e-3,1e-4),p = seq(0.1,1,0.1),pi = seq(0,1.5,length.out = 10), K = seq(1,10,1),
+seq<-expand.grid(N=1000, tmax=300,Nsim = 100, mu = c(1e-1,1e-2,1e-3,1e-4),p = seq(0.1,1,0.1),pi = seq(0,1.5,length.out = 10), K = seq(1,10,1),
                  type = c("random","scalefree","smallworld"))
 
 seq <- seq[c(which(seq$type == "random"     & seq$pi == 0  & seq$K ==1),
@@ -85,7 +85,7 @@ seqoverall <- seq
 
 
 graphics.off()
-png("Networks.png", res = 900, height = 28, width = 20, units = "cm")
+png("Networks2.png", res = 900, height = 28, width = 20, units = "cm")
 
 par(mfrow=c(5,3),
     oma=c(2,2.6,1,0.5),
@@ -104,7 +104,7 @@ legend("topright", "A", cex=1.1, bty="n")
 
 # Scale free networks
 
-g <- sample_pa(100, power = 2, m = 2, out.dist = NULL, out.seq = NULL,
+g <- sample_pa(100, power = 1, m = 2, out.dist = NULL, out.seq = NULL,
                out.pref = FALSE, zero.appeal = 1, directed = FALSE,
                algorithm ="psumtree", start.graph = NULL)
 V(g)$color <- "black"
@@ -148,7 +148,7 @@ mtext("P(k)", side = 2, line = 3, cex = 1.1)
 #Scale - Free
 aa <- list()
 for (i in 1:1000) {
-  g <- sample_pa(1000, power = 1, m = 1, out.dist = NULL, out.seq = NULL,out.pref = FALSE, zero.appeal = 1, directed = FALSE,algorithm ="psumtree", start.graph = NULL) 
+  g <- sample_pa(1000, power = 1, m = 2, out.dist = NULL, out.seq = NULL,out.pref = FALSE, zero.appeal = 1, directed = FALSE,algorithm ="psumtree", start.graph = NULL) 
   aa[[i]] <- degree.distribution(g)
 }
 

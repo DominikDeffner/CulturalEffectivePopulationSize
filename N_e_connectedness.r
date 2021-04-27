@@ -16,10 +16,10 @@ N_e <- function(k_bar,V_k){
 }
 
 N = 1000          # Census population size
-tmax = 300       # Number of timesteps / generations
-mu = 1e-3       # Innovation rate
-m = 0         #Migration rate between 2 populations
-e = 0.3
+tmax = 1000       # Number of timesteps / generations
+mu = 1e-2       # Innovation rate
+m = 0        #Migration rate between 2 populations
+e = 1
 # Initialize population with cultural traits
 
 Pop <- matrix(NA, 2, N)
@@ -28,7 +28,7 @@ Pop <- matrix(NA, 2, N)
 Pop[1,] <- sample(1:N)
 
 #All same
-Pop[2,] <- rep(1, N)
+Pop[2,] <- rep(N+1, N)
 
 # Create numerator for cultural variants in both populations
 Counter <- c(max(Pop[1,]), max(Pop[2,]))
@@ -70,6 +70,7 @@ d2 <- c(d2, Div[2])
 
 # Create output objects
 N_effective <- list()
+Divers <- list()
 
 Offspring_Record1 <-  sapply(1:N, function(x) length(which(Copied[1,] == x)))
 Offspring_Record2 <-  sapply(1:N, function(x) length(which(Copied[2,] == x)))
@@ -77,16 +78,27 @@ Offspring_Record2 <-  sapply(1:N, function(x) length(which(Copied[2,] == x)))
 N_effective[[1]] <- N_e(mean(Offspring_Record1), var(Offspring_Record1))
 N_effective[[2]] <- N_e(mean(Offspring_Record2), var(Offspring_Record2))
 
+Divers[[1]] <- length(unique(Pop[1,]))
+Divers[[2]] <- length(unique(Pop[2,]))
+
 
 for (t in 1:tmax) {
   
   # Migration
   Migrants1 <- which(rbinom(N,1,m) == 1)
   Migrants2 <- sample(1:N, size = length(Migrants1), replace = FALSE)
-  Pop[1, Migrants1] <- Pop[2, Migrants2]
-  Pop[2, Migrants2] <- Pop[1, Migrants1]
   
-  
+  Pop1new <- Pop[2, Migrants2]
+  Pop2new <- Pop[1, Migrants1]
+
+  Pop[1, Migrants1] <- Pop1new
+  Pop[2, Migrants2] <- Pop2new
+
+
+  # Pop[1, Migrants1] <- Pop[2, Migrants2]
+  # Pop[2, Migrants2] <- Pop[1, Migrants1]
+
+
   for (pop_id in 1:2) {
     
     #Cultural Transmission
@@ -105,13 +117,14 @@ for (t in 1:tmax) {
       
     # Compute effective population size
     N_effective[[pop_id]] <-  c(N_effective[[pop_id]], N_e(mean(Offspring_Record), var(Offspring_Record)))
+    Divers[[pop_id]] <- c(Divers[[pop_id]] , length(unique(Pop[pop_id,])))
+    
     
     
     # Innovation
     Innovators <- rbinom(N,1,mu)
     Pop[pop_id, Innovators == 1] <- (Counter[pop_id] + 1) : (Counter[pop_id] + length(which(Innovators==1)))
     Counter[pop_id] <- max(Pop[pop_id,])
-    
   
   }#pop_id
   
@@ -120,12 +133,20 @@ for (t in 1:tmax) {
 
 
 
-par(mfrow=c(1,2))
+par(mfrow=c(2,2))
 plot(N_effective[[1]], type = "b")
 abline(h = mean(N_effective[[1]]))
 
 plot(N_effective[[2]], type = "b")
 abline(h = mean(N_effective[[2]]))
+
+
+
+plot(Divers[[1]], type = "b")
+abline(h = mean(Divers[[1]]))
+
+plot(Divers[[2]], type = "b")
+abline(h = mean(Divers[[2]]))
 
 
 

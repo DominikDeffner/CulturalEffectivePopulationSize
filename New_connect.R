@@ -84,12 +84,16 @@ sim.funct <- function(N, tmax, Nsim, mu, m, e){
     
     
     for (t in 1:tmax) {
-      
       # Migration
       Migrants1 <- which(rbinom(N,1,m) == 1)
       Migrants2 <- sample(1:N, size = length(Migrants1), replace = FALSE)
-      Pop[1, Migrants1] <- Pop[2, Migrants2]
-      Pop[2, Migrants2] <- Pop[1, Migrants1]
+      
+      Pop1new <- Pop[2, Migrants2]
+      Pop2new <- Pop[1, Migrants1]
+      
+      Pop[1, Migrants1] <- Pop1new
+      Pop[2, Migrants2] <- Pop2new
+      
       
       for (pop_id in 1:2) {
         
