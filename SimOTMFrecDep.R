@@ -10,8 +10,12 @@ Ne_simpl <- function(N,sigma){
   (N-1)/sigma
 }
 
-
+#For OTM
 seq<-expand.grid(N=1000, tmax=300,Nsim = 100, mu = c(1e-2,1e-3,1e-4), k = seq(0.1,1,0.1), theta = 1 )
+
+#For Frequency dependence
+#seq<-expand.grid(N=1000, tmax=300,Nsim = 100, mu = c(1e-2,1e-3,1e-4), k = 1, theta = c(0.5,1,1.5) )
+
 
 #Define simulation function
 

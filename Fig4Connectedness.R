@@ -10,8 +10,9 @@ col.pal <- brewer.pal(length(x), "Dark2") #create a pallette which you loop over
 
 # Simulation results
 
-#seq<-expand.grid(N=1000, tmax=500,Nsim = 10, mu = c(1e-1,1e-2,1e-3,1e-4), m = seq(0,0.9,0.1), e = seq(0,0.9,0.1) )
 
+seq<-expand.grid(N=1000, tmax=300,Nsim = 1000, mu = c(1e-4,1e-3,1e-2,1e-1), m = seq(0,0.9,0.1), e = seq(0,0.9,0.1) )
+seq <- seq[-which(seq$m > 0 & seq$e !=0), ]
 
 Mean_ei <- matrix(NA, nrow = nrow(seq), ncol = seq$tmax[1])
 Upper_ei <- matrix(NA, nrow = nrow(seq), ncol = seq$tmax[1])
@@ -78,6 +79,7 @@ par(mfrow=c(3,2),
     oma=c(3,1,0,0.5),
     mar=c(1.5,3.5,2,0))
 
+mu_seq <- rev(unique(seq$mu))
 #Effective Size
 mu <- 1e-4
 plot((1:10)-0.17,Mean_ev[which(seq$e == 0 & seq$mu == mu)], ylim = c(0, 2050),xlim = c(1,10.2), type= "n",xaxt = "n", ylab = "", pch=18, cex=1.3, xlab = "")
@@ -119,8 +121,8 @@ legend("bottomright", c("Variance effective size", "Inbreeding effective size"),
 plot(Mean_Simp[which(seq$e == 0& seq$mu == mu)], ylim = c(0, 1),type = "n", xaxt = "n", ylab = "", pch=18, cex=1.1, xlab = "")
 axis(1,at=seq(1,10,3),labels=seq(0,0.9,0.3))
 
-for (mu in  unique(seq$mu)) {
-  lines(Mean_Simp[which(seq$e == 0& seq$mu == mu)],type = "b",  pch=14+which(unique(seq$mu)==mu), cex=1.2, col= col.pal[which(unique(seq$mu)==mu)])
+for (mu in mu_seq){
+  lines(Mean_Simp[which(seq$e == 0& seq$mu == mu)],type = "b",  pch=14+which(mu_seq==mu), cex=1.2, col= col.pal[which(mu_seq==mu)])
 }
 
 mtext("Simpson Diversity Index", side = 2, line = 3, cex = 1)
@@ -129,8 +131,8 @@ mtext("Simpson Diversity Index", side = 2, line = 3, cex = 1)
 plot(Mean_Simp[which(seq$m == 0& seq$mu == mu)], ylim = c(0, 1),type = "n", xaxt = "n", ylab = "", pch=18, cex=1.1, xlab = "")
 axis(1,at=seq(1,10,3),labels=seq(0,0.9,0.3))
 
-for (mu in unique(seq$mu)) {
-  lines(Mean_Simp[which(seq$m == 0& seq$mu == mu)],type = "b",  pch=14+which(unique(seq$mu)==mu), cex=1.2,col=col.pal[which(unique(seq$mu)==mu)])
+for (mu in mu_seq) {
+  lines(Mean_Simp[which(seq$m == 0& seq$mu == mu)],type = "b",  pch=14+which(mu_seq==mu), cex=1.2,col=col.pal[which(mu_seq==mu)])
 }
 abline(h = 1000, lty = 2)
 legend("bottomright",title = expression(paste("Innovation rate ", mu)), ncol = 2, legend=expression(10^-1,10^-2,10^-3,10^-4), col=c(col.pal[1:4]), pch = c(15,16,17,18), bty = "n", cex = 1.3)
@@ -147,8 +149,8 @@ plot(Mean_Traits[which(seq$e == 0& seq$mu == mu)],log="y", ylim = c(1, 1000),typ
 axis(1,at=seq(1,10,3),labels=seq(0,0.9,0.3))
 axis(2,at=c(1,10,100,1000),labels=c(1,10,100,1000))
 
-for (mu in  unique(seq$mu)) {
-  lines(Mean_Traits[which(seq$e == 0& seq$mu == mu)],type = "b",  pch=14+which(unique(seq$mu)==mu), cex=1.2, col= col.pal[which(unique(seq$mu)==mu)])
+for (mu in  mu_seq) {
+  lines(Mean_Traits[which(seq$e == 0& seq$mu == mu)],type = "b",  pch=14+which(mu_seq==mu), cex=1.2, col= col.pal[which(mu_seq==mu)])
 }
 
 mtext(expression(paste("Migration rate  ", italic(paste(m)))), side = 1, line = 3.5, cex = 1)
@@ -159,8 +161,8 @@ plot(Mean_Traits[which(seq$m == 0& seq$mu == mu)],log="y", ylim = c(1, 1000),typ
 axis(1,at=seq(1,10,3),labels=seq(0,0.9,0.3))
 axis(2,at=c(1,10,100,1000),labels=c(1,10,100,1000))
 
-for (mu in unique(seq$mu)) {
-  lines(Mean_Traits[which(seq$m == 0& seq$mu == mu)],type = "b",pch=14+which(unique(seq$mu)==mu), cex=1.2,col=col.pal[which(unique(seq$mu)==mu)])
+for (mu in mu_seq) {
+  lines(Mean_Traits[which(seq$m == 0& seq$mu == mu)],type = "b",pch=14+which(mu_seq==mu), cex=1.2,col=col.pal[which(mu_seq==mu)])
 }
 mtext(expression(paste("Exchange rate  ", italic(paste(e)))), side = 1, line = 3.5, cex = 1)
 
