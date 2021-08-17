@@ -54,7 +54,10 @@ for (i in 1 : nrow(seq)) {
   }
 }
 
-
+library(scales)
+#color stuff
+require(RColorBrewer)#load package
+col.pal <- brewer.pal(8, "Dark2") #create a pallette which you loop over for corresponding values
 
 graphics.off()
 png("AltMig.png", res = 600, height = 22, width = 20, units = "cm")
