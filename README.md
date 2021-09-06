@@ -1,4 +1,4 @@
-# Cultural Effective Population Sizes
+# Cultural Effective Population Size
 
 This repository contains the scripts to reproduce all results and plots in 
 
