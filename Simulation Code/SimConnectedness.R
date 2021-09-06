@@ -1,8 +1,17 @@
 
-# Cultural effective population size model
-# Connected model; every new innovation is unique (has not ocurred in any population)
+# Cultural effective population size model based on Wright-Fisher dynamic
 
+###
+##
+# Different mechanisms of population interconnectedness: Migration and cultural exchange
+##
+###
+
+
+#Load Package to calculate Simpson diversity
 library(vegan)
+
+#Function for different Ne formulations (equations 2 and 3 in the main text)
 
 Ne_i <- function(N,k,sigma){
   (N*k-1)  /  (k -1 + (sigma/k))
@@ -38,7 +47,7 @@ sim.funct <- function(N, tmax, Nsim, mu, m, e){
     # Calculate Simpson diversity in both populations
     Div <- c()
     for (pop_id in 1:2) {
-      Div[pop_id] <- diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson")
+      Div[pop_id] <- vegan::diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson")
     }
     
     # Burn-in to reach equilibrium
@@ -60,7 +69,7 @@ sim.funct <- function(N, tmax, Nsim, mu, m, e){
       # Calculate Simpson diversity in both populations
       Div <- c()
       for (pop_id in 1:2) {
-        Div[pop_id] <- diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson")
+        Div[pop_id] <- vegan::diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson")
       }
     }#while
     
@@ -78,7 +87,7 @@ sim.funct <- function(N, tmax, Nsim, mu, m, e){
       N_effective_v[[pop_id]] <- Ne_v(N,mean(Offspring_Record),var(Offspring_Record))
       N_effective_i[[pop_id]] <- Ne_i(N,mean(Offspring_Record),var(Offspring_Record))
       
-      Div_Simpson[[pop_id]] <- diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson")
+      Div_Simpson[[pop_id]] <- vegan::diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson")
       Div_NoTraits[[pop_id]] <- length(unique(Pop[pop_id,]))
     }
     
@@ -115,7 +124,7 @@ sim.funct <- function(N, tmax, Nsim, mu, m, e){
         N_effective_i[[pop_id]] <-  c(N_effective_i[[pop_id]], Ne_i(length(Offspring_Record),mean(Offspring_Record), var(Offspring_Record)))
         
         #Compute diversity indices
-        Div_Simpson[[pop_id]] <- c( Div_Simpson[[pop_id]], diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson"))
+        Div_Simpson[[pop_id]] <- c( Div_Simpson[[pop_id]], vegan::diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson"))
         Div_NoTraits[[pop_id]] <- c( Div_NoTraits[[pop_id]] ,length(unique(Pop[pop_id,])))
         
         # Innovation
@@ -140,13 +149,12 @@ sim.funct <- function(N, tmax, Nsim, mu, m, e){
 
 
 
-# pass to mclapply
+# pass to mclapply; it makes sense to select as many cores as there are parameter combinations in case you have access to a computer cluster
 
 library(parallel)
 
 result <- mclapply(
   1:nrow(seq) ,
   function(i) sim.funct(seq$N[i], seq$tmax[i], seq$Nsim[i], seq$mu[i], seq$m[i], seq$e[i]),
-  mc.cores=76)
+  mc.cores=1)
 
-save(result, file = "Neff_Conn_unique200421")

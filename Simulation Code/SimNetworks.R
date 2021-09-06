@@ -1,11 +1,23 @@
 
-# Cultural effective population size model
-# We want a simple infinite allele Wright-Fisher-style model with different modes of transmission
+# Cultural effective population size model based on Wright-Fisher dynamic
+
+###
+##
+# Different social network types
+##
+###
 
 
-
+#Load Packages to calculate Simpson diversity and construct networls
 library(vegan)
 library(igraph)
+
+#Function for simplified Ne (equation 3 in the main text)
+Ne_simpl <- function(N,sigma){
+  (N-1)/sigma
+}
+
+
 seq<-expand.grid(N=1000, tmax=300,Nsim = 1000, mu = c(1e-1,1e-2,1e-3,1e-4),p = seq(0.1,1,0.1),pi = seq(0,1.5,length.out = 10), K = seq(1,10,1),
                  type = c("random","scalefree","smallworld"))
 
@@ -43,6 +55,7 @@ sim.funct <- function(N, tmax, Nsim, mu, p, pi, K, type){
     
     d1 <- Div[1]
     d2 <- Div[2]
+    
     # Burn-in to reach equilibrium
     while(Div[1] > Div[2]){
       Copied <- matrix(NA, 2, N)
@@ -71,9 +84,6 @@ sim.funct <- function(N, tmax, Nsim, mu, p, pi, K, type){
     
     
     # Create output objects
-    Ne <- function(V_k){
-      (N-1) / V_k
-    }
     
     N_effective <- list()
     Div_Simpson <- list()
@@ -83,7 +93,7 @@ sim.funct <- function(N, tmax, Nsim, mu, p, pi, K, type){
     # Calculate effective sizes and diversity indices
     for (pop_id in 1:2) {
       Offspring_Record <-  sapply(1:N, function(x) length(which(Copied[pop_id,] == x)))
-      N_effective[[pop_id]] <- Ne(var(Offspring_Record))
+      N_effective[[pop_id]] <- Ne_simpl(N, var(Offspring_Record))
       Div_Simpson[[pop_id]] <- vegan::diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson")
       Div_NoTraits[[pop_id]] <- length(unique(Pop[pop_id,]))
     }
@@ -133,7 +143,7 @@ sim.funct <- function(N, tmax, Nsim, mu, p, pi, K, type){
         
         # Compute effective population size
         Offspring_Record <-  sapply(1:N, function(x) length(which(Copied == x)))
-        N_effective[[pop_id]] <-  c(N_effective[[pop_id]], Ne(var(Offspring_Record)))
+        N_effective[[pop_id]] <-  c(N_effective[[pop_id]], Ne_simpl(N, var(Offspring_Record)))
         
         
         #Compute diversity indices
@@ -148,8 +158,7 @@ sim.funct <- function(N, tmax, Nsim, mu, p, pi, K, type){
         
       }#pop_id
       
-      print(t)
-    }
+  }
     
     
     Output_list<-list(N_effective = N_effective,
@@ -166,13 +175,12 @@ sim.funct <- function(N, tmax, Nsim, mu, p, pi, K, type){
 
 
 
-# pass to mclapply
+# pass to mclapply; it makes sense to select as many cores as there are parameter combinations in case you have access to a computer cluster
 
 library(parallel)
 
 result <- mclapply(
   1:nrow(seq) ,
   function(i) sim.funct(seq$N[i], seq$tmax[i], seq$Nsim[i], seq$mu[i], seq$p[i], seq$pi[i],seq$K[i],seq$type[i]),
-  mc.cores=60)
+  mc.cores=1)
 
-save(result, file = "Neff_networks2704newscale")

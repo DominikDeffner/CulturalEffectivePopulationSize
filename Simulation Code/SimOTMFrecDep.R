@@ -1,26 +1,35 @@
 
-# Cultural effective population size model
-# We want a simple infinite allele Wright-Fisher-style model with different modes of transmission
+# Cultural effective population size model based on Wright-Fisher dynamic
+
+###
+##
+# Different cultural transmission modes: One-to-many and frequency-dependent transmission
+##
+###
 
 
-
+#Load Package to calculate Simpson diversity
 library(vegan)
 
+#Function for simplified Ne (equation 3 in the main text)
 Ne_simpl <- function(N,sigma){
   (N-1)/sigma
 }
 
+
+# Simulation code is for both transmission mechanisms. Uncomment respective line for appropriate parameter values
+
+
 #For OTM
-seq<-expand.grid(N=1000, tmax=300,Nsim = 100, mu = c(1e-2,1e-3,1e-4), k = seq(0.1,1,0.1), theta = 1 )
+seq<-expand.grid(N=1000, tmax=300,Nsim = 1000, mu = c(1e-1, 1e-2,1e-3,1e-4), k = seq(0.1,1,0.1), theta = 1 )
 
 #For Frequency dependence
-#seq<-expand.grid(N=1000, tmax=300,Nsim = 100, mu = c(1e-2,1e-3,1e-4), k = 1, theta = c(0.5,1,1.5) )
+#seq<-expand.grid(N=1000, tmax=300,Nsim = 1000, mu = c(1e-2,1e-3,1e-4), k = 1, theta = c(0.5,1,1.5) )
 
 
 #Define simulation function
 
 sim.funct <- function(N, tmax, Nsim, mu, k, theta){
-  
   
   Combined_list <- list()
   
@@ -42,9 +51,8 @@ sim.funct <- function(N, tmax, Nsim, mu, k, theta){
     # Calculate Simpson diversity in both populations
     Div <- c()
     for (pop_id in 1:2) {
-      Div[pop_id] <- diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson")
+      Div[pop_id] <- vegan::diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson")
     }
-    
     
     
     # Burn-in to reach equilibrium
@@ -66,7 +74,7 @@ sim.funct <- function(N, tmax, Nsim, mu, k, theta){
       # Calculate Simpson diversity in both populations
       Div <- c()
       for (pop_id in 1:2) {
-        Div[pop_id] <- diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson")
+        Div[pop_id] <- vegan::diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson")
       }
     }#while
     
@@ -75,7 +83,6 @@ sim.funct <- function(N, tmax, Nsim, mu, k, theta){
     
     N_effective <- list()
     Div_Simpson <- list()
-    Div_Shannon <- list()
     Div_NoTraits <- list()
     
     # Calculate effective population size
@@ -88,19 +95,14 @@ sim.funct <- function(N, tmax, Nsim, mu, k, theta){
     # Calculate diversity indices
 
     for (pop_id in 1:2) {
-      Div_Simpson[[pop_id]] <- diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson")
-      Div_Shannon[[pop_id]] <- diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "shannon")
-      
+      Div_Simpson[[pop_id]] <- vegan::diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson")
       Div_NoTraits[[pop_id]] <- length(unique(Pop[pop_id,]))
     }
-    
-    
-    
+
     for (t in 1:tmax) {
       
       for (pop_id in 1:2) {
         
-
         #Cultural Transmission
         # First sample set of potential models (fraction k of N) from the population
         Models <- sample(1:N, size = k*N, replace = FALSE)
@@ -121,26 +123,19 @@ sim.funct <- function(N, tmax, Nsim, mu, k, theta){
         
         Pop[pop_id,] <- Pop[pop_id,Copied]
         
-        
         # Compute effective population size
         Offspring_Record <-  sapply(1:N, function(x) length(which(Copied == x)))
         Ne <- Ne_simpl(N, var(Offspring_Record))
         N_effective[[pop_id]] <-  c(N_effective[[pop_id]],Ne)    
         
         #Compute diversity indices
-        Div_Simpson[[pop_id]] <- c( Div_Simpson[[pop_id]], diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson"))
-        Div_Shannon[[pop_id]] <- c( Div_Shannon[[pop_id]], diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "shannon"))
-        
+        Div_Simpson[[pop_id]] <- c( Div_Simpson[[pop_id]], vegan::diversity(sapply(unique(Pop[pop_id,]), function (x) length(which(Pop[pop_id,] == x))), index = "simpson"))
         Div_NoTraits[[pop_id]] <- c( Div_NoTraits[[pop_id]] ,length(unique(Pop[pop_id,])))
-        
         
         # Innovation
         Innovators <- rbinom(N,1,mu)
         Pop[pop_id, Innovators == 1] <- (Counter[pop_id] + 1) : (Counter[pop_id] + length(which(Innovators==1)))
         Counter[pop_id] <- max(Pop[pop_id,])
-        
-        
-        
         
       }#pop_id
       
@@ -148,7 +143,6 @@ sim.funct <- function(N, tmax, Nsim, mu, k, theta){
     
     
     Output_list<-list(N_effective = N_effective,
-                      Div_Shannon = Div_Shannon,
                       Div_Simpson = Div_Simpson,
                       Div_NoTraits = Div_NoTraits) 
     
@@ -162,13 +156,12 @@ sim.funct <- function(N, tmax, Nsim, mu, k, theta){
 
 
 
-# pass to mclapply
+# pass to mclapply; it makes sense to select as many cores as there are parameter combinations in case you have access to a computer cluster
 
 library(parallel)
 
 result <- mclapply(
   1:nrow(seq) ,
   function(i) sim.funct(seq$N[i], seq$tmax[i], seq$Nsim[i], seq$mu[i], seq$k[i], seq$theta[i]),
-  mc.cores=30)
+  mc.cores=1)
 
-save(result, file = "Neff_DiversityOTM1112")

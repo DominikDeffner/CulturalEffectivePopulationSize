@@ -1,9 +1,17 @@
 
-# Cultural effective population size model
-# Connected model; every new innovation is unique (has not occurred in any population)
+# Cultural effective population size model based on Wright-Fisher dynamic
 
-# Here I try different migration mechanism
+###
+##
+# Alternative migration mechanism where immigration constantly increases census size in a focal population
+##
+###
+
+
+#Load Package to calculate Simpson diversity
 library(vegan)
+
+#Function for different Ne formulations (equations 2 and 3 in the main text)
 
 Ne_i <- function(N,k,sigma){
   (N*k-1)  /  (k -1 + (sigma/k))
@@ -13,7 +21,8 @@ Ne_v <- function(N,k,sigma){
   ((N-1)*k)/(sigma/k)
 }
 
-seq<-expand.grid(tmax=150,Nsim = 100, mu = c(1e-4,1e-3, 1e-2, 1e-1), N_mig = c(5, 10, 50) )
+
+seq<-expand.grid(tmax=150,Nsim = 1000, mu = c(1e-4,1e-3, 1e-2, 1e-1), N_mig = c(5, 10, 50) )
 
 
 
@@ -69,7 +78,6 @@ sim.funct <- function(tmax, Nsim, mu, N_mig){
     }#while
     
     
-    
     # Create output objects
     N_effective_v <- list()
     N_effective_i <- list()
@@ -89,9 +97,9 @@ sim.funct <- function(tmax, Nsim, mu, N_mig){
     
     
     for (t in 1:tmax) {
+      
       # Migration
       Migrants <- sample(1:length(Pop[[2]]), N_mig, replace = FALSE)
-      
       
       Pop[[1]] <- c( Pop[[1]],  Pop[[2]][Migrants]  )
       Pop[[2]] <- Pop[[2]][-Migrants]
@@ -100,14 +108,9 @@ sim.funct <- function(tmax, Nsim, mu, N_mig){
       for (pop_id in 1:2) {
         
         #Cultural Transmission
-        
-        
         Copied <- sample(1:length(Pop[[pop_id]]), length(Pop[[pop_id]]), replace = TRUE)
         Pop[[pop_id]] <- Pop[[pop_id]][Copied]
-        
-        
         Offspring_Record <-  sapply(1:length(Pop[[pop_id]]), function(x) length(which(Copied == x)))
-        
         
         # Compute effective population sizes
         N_effective_v[[pop_id]] <-  c(N_effective_v[[pop_id]], Ne_v(length(Offspring_Record),mean(Offspring_Record), var(Offspring_Record)))
