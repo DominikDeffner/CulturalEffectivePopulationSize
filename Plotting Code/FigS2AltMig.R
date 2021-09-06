@@ -1,5 +1,12 @@
-# Simulation results
+####
+###
+##
+# Plotting code for Fig. S2
+##
+###
+####
 
+# Requires simulation results from "SimAltMig.R" 
 
 seq<-expand.grid(tmax=150,Nsim = 1000, mu = c(1e-4,1e-3, 1e-2, 1e-1), N_mig = c(5, 10, 50) )
 
@@ -59,8 +66,8 @@ library(scales)
 require(RColorBrewer)#load package
 col.pal <- brewer.pal(8, "Dark2") #create a pallette which you loop over for corresponding values
 
-graphics.off()
-png("AltMig.png", res = 600, height = 22, width = 20, units = "cm")
+#graphics.off()
+#png("AltMig.png", res = 600, height = 22, width = 20, units = "cm")
 
 par(mfrow = c(4, 3),
     oma=c(3,3.8,0,0),
@@ -90,4 +97,4 @@ polygon(c(1:150,150:1), c(Upper_Simp[Parameters,], rev(Lower_Simp[Parameters,]))
 }
 mtext("Generation", side = 1, cex = 1.2, outer = TRUE, line = 2)
 
-dev.off()
+#dev.off()

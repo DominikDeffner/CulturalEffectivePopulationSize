@@ -1,14 +1,19 @@
 
-# Effective population size analysis script
-# Connectedness
+####
+###
+##
+# Plotting code for Fig. 4
+##
+###
+####
+
+# Requires simulation results from "SimConnectedness.R" 
 
 #color stuff
 require(RColorBrewer)#load package
 
 x <- seq(from=0, to=1, by=0.2) # fake data
 col.pal <- brewer.pal(length(x), "Dark2") #create a pallette which you loop over for corresponding values
-
-# Simulation results
 
 
 seq<-expand.grid(N=1000, tmax=300,Nsim = 1000, mu = c(1e-4,1e-3,1e-2,1e-1), m = seq(0,0.9,0.1), e = seq(0,0.9,0.1) )
@@ -68,12 +73,8 @@ Mean_Traits <- apply(Mean_Traits[, -1], 1, mean)
 
 
 
-
-
-
-
-graphics.off()
-png("Connectedness.png", res = 900, height = 19, width = 15, units = "cm")
+#graphics.off()
+#png("Connectedness.png", res = 900, height = 19, width = 15, units = "cm")
 
 par(mfrow=c(3,2),
     oma=c(3,1,0,0.5),
@@ -166,5 +167,5 @@ for (mu in mu_seq) {
 }
 mtext(expression(paste("Exchange rate  ", italic(paste(e)))), side = 1, line = 3.5, cex = 1)
 
-dev.off()
+#dev.off()
 

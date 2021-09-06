@@ -1,6 +1,16 @@
 
-# Effective population size analysis script
-#Frequency dependence
+
+
+####
+###
+##
+# Plotting code for Fig. 3 & Fig. S1
+##
+###
+####
+
+# Requires simulation results from "SimOTMFrecDep.R" set to frequency-dependent transmission
+
 
 seq<-expand.grid(N=1000, tmax=300,Nsim = 1000, mu = c(1e-2,1e-3,1e-4), k = 1, theta = c(0.2,0.5,0.9,0.99,0.999, 1 ,1.001,1.01,1.1,1.5,2) )
 
@@ -29,8 +39,10 @@ for (i in 1 : nrow(seq)) {
 }
 
 
-graphics.off()
-png("Conf.png", res = 1200, height = 16, width = 18, units = "cm")
+### FIGURE 3
+
+#graphics.off()
+#png("Conf.png", res = 1200, height = 16, width = 18, units = "cm")
 
 par(mfrow = c(3,3),
     oma=c(2,5.2,2,0),
@@ -63,20 +75,14 @@ mtext(expression(paste("    ",mu, " = ",10^-2, "                                
                        mu, " = ",10^-4)), side = 2,outer=TRUE, line = 0.2, cex = 0.9)
 
 
-
-
-dev.off()
-
+#dev.off()
 
 
 
+### FIGURE S1
 
-
-
-### Many thetas
-
-graphics.off()
-png("ConfMany.png", res = 600, height = 14, width = 32, units = "cm")
+#graphics.off()
+#png("ConfMany.png", res = 600, height = 14, width = 32, units = "cm")
 
 par(mfrow = c(3,11),
     oma=c(2,5.2,2,0),
@@ -105,7 +111,6 @@ for (mu in c(1e-4,1e-3,1e-2)) {
     if (mu == 1e-4 & theta == 1.5) mtext(expression(paste(theta," = 1.5")))
     if (mu == 1e-4 & theta == 2) mtext(expression(paste(theta," = 2")))
     
-    
   }
 }
 
@@ -117,7 +122,5 @@ mtext(expression(paste("    ",mu, " = ",10^-2, "                             ",
                        mu, " = ",10^-4)), side = 2,outer=TRUE, line = 0.8, cex = 0.9)
 
 
-
-
-dev.off()
+#dev.off()
 

@@ -1,11 +1,27 @@
- N_pop <- 8
+
+####
+###
+##
+# Plotting code for Fig. 1
+##
+###
+####
+
+
+N_pop <- 8
  t_max <- 100
  p0 <- 0.5
  
  
+ library(scales)
+ #color stuff
+ require(RColorBrewer)#load package
+ col.pal <- brewer.pal(8, "Dark2") #create a pallette which you loop over for corresponding values
+ seqoverall <- seq
+ 
+ 
  require(RColorBrewer)#load package
  col.pal <- brewer.pal(N_pop, "Dark1") #create a pallette which you loop over for corresponding values
- 
  
  # graphics.off()
  # png("Drift.png", width = 15,height = 15, units = "cm", res = 1200)
@@ -33,7 +49,6 @@
  lines(p[i,], col = col.pal[i], lwd=2)
  }
  mtext(side = 3, expression(paste(italic("N")," = ",10)))
- 
  
   N<- 100
 

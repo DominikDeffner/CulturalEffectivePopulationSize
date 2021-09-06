@@ -1,6 +1,16 @@
 
 
-# OTM/Diversity Plots
+
+####
+###
+##
+# Plotting code for Fig. 2
+##
+###
+####
+
+# Requires simulation results from "SimOTMFrecDep.R" set to one-to-many transmission
+
 
 N <- 1000
 sigma_c <- function(R) {
@@ -75,14 +85,8 @@ mu <- 1e-4
 
 
 
-
-
-
-
-
-
-graphics.off()
-png("OTM.png", res = 900, height = 16, width = 18, units = "cm")
+#graphics.off()
+#png("OTM.png", res = 900, height = 16, width = 18, units = "cm")
 
 par(mfrow=c(2,2),
     oma=c(1.1,0.5,0,0),
@@ -90,7 +94,7 @@ par(mfrow=c(2,2),
 
 # Offspring variance 
 curve(sigma_c(x), from = 1, to = N, lwd = 3, ylab = "", xlim = c(1,N), log="y",yaxt='n')
-mtext(expression(paste("Variance in cultural influence  ",italic(sigma[c]^2))), side = 2, line = 2.3, cex = 1)
+mtext(expression(paste("Variance in cultural influence  ",italic(sigma[OTM]^2))), side = 2, line = 2.3, cex = 1)
 legend("topleft", "A", cex=1.1, bty="n")
 axis(2,at=c(1,10,100,1000),labels=c(1,10,100,1000))
 legend("topright",title = expression(paste("Innovation rate ", mu)), ncol = 2, legend=expression(10^-1,10^-2,10^-3,10^-4), col=c(col.pal[1:4]), pch = c(15,16,17,18), bty = "n", cex = 1.1)
@@ -110,8 +114,6 @@ for (i in c(400, 800)) {
 
 points(seq(100,1000,100), MeanNe[which(seq$mu == mu)], col = "grey", pch=18, cex=1.5)
 arrows(seq(100,1000,100),LowerNe[which(seq$mu == mu)],seq(100,1000,100),UpperNe[which(seq$mu == mu)], code=3, lwd=2,col = "grey", cex=1.3, length=0, angle = 90)
-
-
 
 
 plot(NULL, type = "n", ylim = c(0, 1),xlim = c(50,1000), col="black", lwd=3, xlab = "", ylab = "")
@@ -138,14 +140,6 @@ for (mu in unique(seq$mu)) {
 mtext("Number of unique variants", side = 2,outer=FALSE, line = 2.3, cex = 1)
 
 
-dev.off()
-
-
-
-
-
-
-
-
+#dev.off()
 
 
