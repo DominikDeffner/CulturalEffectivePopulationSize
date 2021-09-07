@@ -3,7 +3,7 @@
 
 ###
 ##
-# Different social network types
+# Different social network types (section 3.4.)
 ##
 ###
 
@@ -175,7 +175,7 @@ sim.funct <- function(N, tmax, Nsim, mu, p, pi, K, type){
 
 
 
-# pass to mclapply; it makes sense to select as many cores as there are parameter combinations in case you have access to a computer cluster
+# pass to mclapply; it makes sense to select as many cores as there are parameter combinations in case you have access to a computer cluster ("mc.cores" argument)
 
 library(parallel)
 

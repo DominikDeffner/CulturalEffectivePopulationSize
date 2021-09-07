@@ -18,7 +18,7 @@ sigma_c <- function(R) {
 }
 
 
-seq<-expand.grid(N=1000, tmax=1000,Nsim = 1000, mu = c(1e-1,1e-2,1e-3,1e-4), k = seq(0.1,1,0.1), theta = 1 )
+seq<-expand.grid(N=1000, tmax=300,Nsim = 1000, mu = c(1e-1,1e-2,1e-3,1e-4), k = seq(0.1,1,0.1), theta = 1 )
 library(scales)
 #color stuff
 require(RColorBrewer)#load package
@@ -68,18 +68,18 @@ for (i in 1 : nrow(seq)) {
 }
 
 
-MeanNe <-  apply(MeanNe[,100:1000], 1, mean)
-LowerNe <- apply(LowerNe[,100:1000], 1, mean)
-UpperNe <- apply(UpperNe[,100:1000], 1, mean)
+MeanNe <-  apply(MeanNe[, -1], 1, mean)
+LowerNe <- apply(LowerNe[, -1], 1, mean)
+UpperNe <- apply(UpperNe[, -1], 1, mean)
 
 
-MeanSimp <-  apply(MeanSimp[,100:1000], 1, mean)
-LowerSimp <- apply(LowerSimp[,100:1000], 1, mean)
-UpperSimp <- apply(UpperSimp[, 100:1000], 1, mean)
+MeanSimp <-  apply(MeanSimp[, -1], 1, mean)
+LowerSimp <- apply(LowerSimp[, -1], 1, mean)
+UpperSimp <- apply(UpperSimp[, -1], 1, mean)
 
-MeanTrait <-  apply(MeanTrait[,100:1000], 1, mean)
-LowerTrait <- apply(LowerTrait[,100:1000], 1, mean)
-UpperTrait <- apply(UpperTrait[,100:1000], 1, mean)
+MeanTrait <-  apply(MeanTrait[, -1], 1, mean)
+LowerTrait <- apply(LowerTrait[, -1], 1, mean)
+UpperTrait <- apply(UpperTrait[, -1], 1, mean)
 
 mu <- 1e-4
 

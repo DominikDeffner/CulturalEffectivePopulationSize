@@ -3,7 +3,7 @@
 
 ###
 ##
-# Different cultural transmission modes: One-to-many and frequency-dependent transmission
+# Different cultural transmission modes: One-to-many and frequency-dependent transmission (section 3.2.)
 ##
 ###
 
@@ -156,7 +156,7 @@ sim.funct <- function(N, tmax, Nsim, mu, k, theta){
 
 
 
-# pass to mclapply; it makes sense to select as many cores as there are parameter combinations in case you have access to a computer cluster
+# pass to mclapply; it makes sense to select as many cores as there are parameter combinations in case you have access to a computer cluster ("mc.cores" argument)
 
 library(parallel)
 

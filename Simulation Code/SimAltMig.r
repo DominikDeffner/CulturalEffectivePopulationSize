@@ -3,7 +3,7 @@
 
 ###
 ##
-# Alternative migration mechanism where immigration constantly increases census size in a focal population
+# Alternative migration mechanism where immigration constantly increases census size in a focal population (section 3.3. and appendix)
 ##
 ###
 
@@ -142,7 +142,7 @@ sim.funct <- function(tmax, Nsim, mu, N_mig){
 
 
 
-# pass to mclapply
+# pass to mclapply; it makes sense to select as many cores as there are parameter combinations in case you have access to a computer cluster ("mc.cores" argument)
 
 library(parallel)
 

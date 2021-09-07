@@ -3,7 +3,7 @@
 
 ###
 ##
-# Different mechanisms of population interconnectedness: Migration and cultural exchange
+# Different mechanisms of population interconnectedness: Migration and cultural exchange (section 3.3.)
 ##
 ###
 
@@ -149,7 +149,7 @@ sim.funct <- function(N, tmax, Nsim, mu, m, e){
 
 
 
-# pass to mclapply; it makes sense to select as many cores as there are parameter combinations in case you have access to a computer cluster
+# pass to mclapply; it makes sense to select as many cores as there are parameter combinations in case you have access to a computer cluster ("mc.cores" argument)
 
 library(parallel)
 
