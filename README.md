@@ -11,10 +11,10 @@ Simulation code for
 - Alternative migration mechanism where constant immigration increases census size in focal population (SimAltMig.R)
 
 Plotting code for all figures in the manuscript
-- Figure 1: Fig1Drift
-- Figure 2: Fig2OTM
-- Figures 3 & S1: Fig3FrecDep
-- Figure 4: Fig4Connectedness
-- Figure 5: Fig5Networks
-- Figure S2: FigS2AltMig
+- Figure 1: Fig1Drift.R
+- Figure 2: Fig2OTM.R
+- Figures 3 & S1: Fig3FrecDep.R
+- Figure 4: Fig4Connectedness.R
+- Figure 5: Fig5Networks.R
+- Figure S2: FigS2AltMig.R
 
