@@ -4,6 +4,8 @@ This repository contains the scripts to reproduce all results and plots in
 
 ***Deffner, D., Kandler, A. & Fogarty, L. (2022) Effective population size for culturally evolving traits, PLOS CompBio***
 
+https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009430
+
 Simulation code for 
 - One-to-many and frequency-dependent cultural transmission (SimOTMFrecDep.R)
 - Connectedness among populations through migration or cultural exchange (SimConnectedness.R)
